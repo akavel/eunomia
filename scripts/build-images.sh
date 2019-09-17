@@ -18,10 +18,12 @@ set -e
 
 REPOSITORY=${1}
 if [ -z "${TRAVIS_TAG}" ] ; then
-    IMAGE_TAG="latest"
+    IMAGE_TAG="dev"
 else
     IMAGE_TAG=${TRAVIS_TAG}
 fi
+
+
 # Whether or not to push images. If set to anything, value will be true.
 PUSH_IMAGES=${2:+true}
 
@@ -29,28 +31,40 @@ PUSH_IMAGES=${2:+true}
 # Usage: build_image <context dir> <image url> <push image (0=true, 1=false)>
 # Example: build_image template-processors/myimage quay.io/KohlsTechnology/myimage:latest 0
 build_image() {
-  context_dir=$1
-  image_url=$2
-  push=${3:-false}
-  docker build ${context_dir} -t ${image_url}
-  if $push; then docker push $image_url; fi
+  local context_dir=$1
+  local image_name=$2
+  local image_url=${REPOSITORY}/${image_name}
+  local push=${PUSH_IMAGES:-false}
+  docker build "${context_dir}" -t "${image_url}:${IMAGE_TAG}"
+  local latest=v$(git tag --list "v[0-9]*" | sed 's/^v//' | sort -t . -n -k 1,1 -k 2,2 -k 3,3 -r | head -n1)
+  if $push; then
+      docker push "${image_url}:${IMAGE_TAG}"
+  fi
+  if [ "${TRAVIS_TAG}" = "${latest}" ]; then
+      docker tag "${image_url}:${IMAGE_TAG}" "${image_url}:latest"
+      if $push; then
+          docker push "${image_url}:latest"
+      fi
+  fi
 }
 
 # building and pushing the operator images
-build_image build ${REPOSITORY}/eunomia-operator:${IMAGE_TAG} ${PUSH_IMAGES}
+# build_image build ${REPOSITORY}/eunomia-operator:${IMAGE_TAG} ${PUSH_IMAGES}
+build_image build/ eunomia-operator
 
 # building and pushing base template processor images
-build_image template-processors/base ${REPOSITORY}/eunomia-base:${IMAGE_TAG} ${PUSH_IMAGES}
+build_image template-processors/base/ eunomia-base
 
 # building and pushing helm template processor images
-build_image template-processors/helm ${REPOSITORY}/eunomia-helm:${IMAGE_TAG} ${PUSH_IMAGES}
+build_image template-processors/helm/ eunomia-helm
 
 # building and pushing OCP template processor images
-build_image template-processors/ocp-template ${REPOSITORY}/eunomia-ocp-templates:${IMAGE_TAG} ${PUSH_IMAGES}
+build_image template-processors/ocp-template/ eunomia-ocp-templates
 
 # building and pushing Applier template processor image
 # NOTE: this is based on the OCP template image, so this build must always come after that.
-build_image template-processors/applier ${REPOSITORY}/eunomia-applier:${IMAGE_TAG} ${PUSH_IMAGES}
+build_image template-processors/applier/ eunomia-applier
 
 # building and pushing jinja template processor images
-build_image template-processors/jinja ${REPOSITORY}/eunomia-jinja:${IMAGE_TAG} ${PUSH_IMAGES}
+build_image template-processors/jinja/ eunomia-jinja
+
