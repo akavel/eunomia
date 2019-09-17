@@ -32,14 +32,16 @@ PUSH_IMAGES=${2:+true}
 # Example: build_image template-processors/myimage quay.io/KohlsTechnology/myimage:latest 0
 build_image() {
   local context_dir=$1
-  local image_name=$2
-  local image_url=${REPOSITORY}/${image_name}
+  local image_url=${REPOSITORY}/$2
   local push=${PUSH_IMAGES:-false}
+
   docker build "${context_dir}" -t "${image_url}:${IMAGE_TAG}"
-  local latest=v$(git tag --list "v[0-9]*" | sed 's/^v//' | sort -t . -n -k 1,1 -k 2,2 -k 3,3 -r | head -n1)
   if $push; then
       docker push "${image_url}:${IMAGE_TAG}"
   fi
+
+  # Do we have to move the "latest" tag in the docker repository?
+  local latest=v$(git tag --list "v[0-9]*" | sed 's/^v//' | sort -t . -n -k 1,1 -k 2,2 -k 3,3 -r | head -n1)
   if [ "${TRAVIS_TAG}" = "${latest}" ]; then
       docker tag "${image_url}:${IMAGE_TAG}" "${image_url}:latest"
       if $push; then
@@ -49,7 +51,6 @@ build_image() {
 }
 
 # building and pushing the operator images
-# build_image build ${REPOSITORY}/eunomia-operator:${IMAGE_TAG} ${PUSH_IMAGES}
 build_image build/ eunomia-operator
 
 # building and pushing base template processor images
