@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-GIT_TAG=$(git tag --list 'v[0-9]*' --points-at HEAD)
+GIT_V_TAG=$(git tag --list 'v[0-9]*' --points-at HEAD)
 
-if [ -z "$GIT_TAG" ]; then
-    GIT_TAG="dev-$(git rev-parse --short HEAD)"
+if [ "$GIT_V_TAG" ]; then
+    echo "$GIT_V_TAG"
+else
+    echo "dev-$(git rev-parse --short HEAD)"
 fi
 
-echo "$GIT_TAG"
