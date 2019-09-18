@@ -41,14 +41,24 @@ build_image() {
           > "${context_dir}/Dockerfile"
   fi
 
-  docker build "${context_dir}" -t "${image_url}:${IMAGE_TAG}"
+  # Make sure "dev" docker tag always points to the most recently changed commit
+  docker build "${context_dir}" -t "${image_url}:dev"
   if $push; then
-      docker push "${image_url}:${IMAGE_TAG}"
+      docker push "${image_url}:dev"
+  fi
+
+  # If adjusting a git tag, set the appropriate tag in docker as well
+  if [ "${IMAGE_TAG}" != "dev" ]; then
+      docker tag "${image_url}:dev" "${image_url}:${IMAGE_TAG}"
+      if $push; then
+          docker push "${image_url}:${IMAGE_TAG}"
+      fi
   fi
 
   # Do we have to move the "latest" tag in the docker repository?
+  # Do it only if the newly tagged version is the newest one in git, according to basic SemVer semantics (vMAJOR.MINOR.PATCH).
   local latest=v$(git tag --list "v[0-9]*" | sed 's/^v//' | sort -t . -n -k 1,1 -k 2,2 -k 3,3 -r | head -n1)
-  if [ "${TRAVIS_TAG}" = "${latest}" ]; then
+  if [ "${IMAGE_TAG}" = "${latest}" ]; then
       docker tag "${image_url}:${IMAGE_TAG}" "${image_url}:latest"
       if $push; then
           docker push "${image_url}:latest"
