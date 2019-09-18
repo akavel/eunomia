@@ -23,7 +23,6 @@ else
     IMAGE_TAG=${TRAVIS_TAG}
 fi
 
-
 # Whether or not to push images. If set to anything, value will be true.
 PUSH_IMAGES=${2:+true}
 
