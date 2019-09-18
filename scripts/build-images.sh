@@ -35,7 +35,10 @@ build_image() {
   local push=${PUSH_IMAGES:-false}
 
   if [ -f "${context_dir}/Dockerfile.in" ]; then
-      sed "s/@IMAGE_TAG@/${IMAGE_TAG}/g" < "${context_dir}/Dockerfile.in" > "${context_dir}/Dockerfile"
+      cat "${context_dir}/Dockerfile.in" |
+          sed "s/@REPOSITORY@/${REPOSITORY}/g" |
+          sed "s/@IMAGE_TAG@/${IMAGE_TAG}/g" \
+          > "${context_dir}/Dockerfile"
   fi
 
   docker build "${context_dir}" -t "${image_url}:${IMAGE_TAG}"
