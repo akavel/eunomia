@@ -36,8 +36,8 @@ build_image() {
 
   if [ -f "${context_dir}/Dockerfile.in" ]; then
       cat "${context_dir}/Dockerfile.in" |
-          sed "s/@REPOSITORY@/${REPOSITORY}/g" |
-          sed "s/@IMAGE_TAG@/${IMAGE_TAG}/g" \
+          sed "s|@REPOSITORY@|${REPOSITORY}|g" |
+          sed "s|@IMAGE_TAG@|${IMAGE_TAG}|g" \
           > "${context_dir}/Dockerfile"
   fi
 
