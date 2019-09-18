@@ -23,7 +23,6 @@ else
     IMAGE_TAG=${TRAVIS_TAG}
 fi
 
-
 # Whether or not to push images. If set to anything, value will be true.
 PUSH_IMAGES=${2:+true}
 
@@ -34,6 +33,10 @@ build_image() {
   local context_dir=$1
   local image_url=${REPOSITORY}/$2
   local push=${PUSH_IMAGES:-false}
+
+  if [ -f "${context_dir}/Dockerfile.in" ]; then
+      sed "s/@IMAGE_TAG@/${IMAGE_TAG}/g" < "${context_dir}/Dockerfile.in" > "${context_dir}/Dockerfile"
+  fi
 
   docker build "${context_dir}" -t "${image_url}:${IMAGE_TAG}"
   if $push; then
