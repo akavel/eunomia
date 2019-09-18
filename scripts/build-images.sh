@@ -27,8 +27,8 @@ fi
 PUSH_IMAGES=${2:+true}
 
 # Builds (and optionally pushes) a single image.
-# Usage: build_image <context dir> <image url> <push image (0=true, 1=false)>
-# Example: build_image template-processors/myimage quay.io/KohlsTechnology/myimage:latest 0
+# Usage: build_image <context dir> <image name>
+# Example: build_image template-processors/myimage/ myimage
 build_image() {
   local context_dir=$1
   local image_url=${REPOSITORY}/$2
