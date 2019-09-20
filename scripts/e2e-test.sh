@@ -38,7 +38,7 @@ helm template deploy/helm/operator/ \
   --set eunomia.operator.deployment.enabled= \
   --set eunomia.operator.namespace=$TEST_NAMESPACE | kubectl apply -f -
 
-operator-sdk test local ./test/e2e --namespace "$TEST_NAMESPACE" --up-local --no-setup
+operator-sdk test local ./test/e2e --go-test-flags -v --namespace "$TEST_NAMESPACE" --up-local --no-setup
 
 helm template deploy/helm/operator/ \
   --set eunomia.operator.deployment.enabled= \

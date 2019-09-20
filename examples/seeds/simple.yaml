@@ -18,6 +18,6 @@ spec:
   - type: Periodic
     cron: "0 * * * *"
   serviceAccountRef: gitops
-  templateProcessorImage: quay.io/kohlstechnology/eunomia-ocp-templates:latest
+  templateProcessorImage: quay.io/akavel/eunomia-ocp-templates:dev
   resourceHandlingMode: CreateOrMerge
   resourceDeletionMode: Delete

@@ -37,7 +37,7 @@ func helmTestDeploy(t *testing.T, f *framework.Framework, ctx *framework.TestCtx
 
 	eunomiaURI, found := os.LookupEnv("EUNOMIA_URI")
 	if !found {
-		eunomiaURI = "https://github.com/kohlstechnology/eunomia"
+		eunomiaURI = "https://github.com/akavel/eunomia"
 	}
 
 	eunomiaRef, found := os.LookupEnv("EUNOMIA_REF")
@@ -70,8 +70,10 @@ func helmTestDeploy(t *testing.T, f *framework.Framework, ctx *framework.TestCtx
 					Type: "Change",
 				},
 			},
-			ResourceDeletionMode:   "Delete",
-			TemplateProcessorImage: "quay.io/kohlstechnology/eunomia-helm:dev",
+			ResourceDeletionMode: "Delete",
+			// TemplateProcessorImage: "quay.io/kohlstechnology/eunomia-helm:latest",
+			// TemplateProcessorImage: "quay.io/kohlstechnology/eunomia-helm:dev",
+			TemplateProcessorImage: "quay.io/akavel/eunomia-helm:dev",
 			ResourceHandlingMode:   "CreateOrMerge",
 			ServiceAccountRef:      "eunomia-operator",
 		},

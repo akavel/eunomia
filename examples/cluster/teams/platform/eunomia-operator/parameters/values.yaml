@@ -8,8 +8,8 @@ eunomia:
 
     image:
       repository: "quay.io"
-      name: "kohlstechnology/eunomia-operator"
-      tag: "latest"
+      name: "akavel/eunomia-operator"
+      tag: "dev"
       pullPolicy: IfNotPresent
 
     imagePullSecrets: []
