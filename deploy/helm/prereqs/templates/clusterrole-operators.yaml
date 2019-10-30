@@ -19,6 +19,7 @@ rules:
   verbs:
   - get
   - list
+  - watch  # needed by k8s.io/client-go/tools/cache
 # operator's resources  
 - apiGroups:
   - eunomia.kohls.io
