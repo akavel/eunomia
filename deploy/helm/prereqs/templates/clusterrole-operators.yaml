@@ -11,6 +11,14 @@ rules:
   - cronjobs
   verbs:
   - '*'  
+# needed by operator logic when handling finalizers
+- apiGroups:
+  - ''
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
 # operator's resources  
 - apiGroups:
   - eunomia.kohls.io
