@@ -57,7 +57,8 @@ func WebhookHandler(w http.ResponseWriter, r *http.Request, reconciler gitopscon
 		{
 			//find the list of CR that have this url.
 			//log.Info("event is of type push")
-			list, err := reconciler.GetAllGitOpsConfig()
+			// FIXME: GetAll should be a freestanding func in gitopsconfig package, not a method of reconciler
+			list, err := reconciler.GetAll()
 			if err != nil {
 				log.Error(err, "unable to get the list of GitOpsCionfig")
 				w.WriteHeader(500)
