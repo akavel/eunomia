@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 # Copyright 2019 Kohl's Department Stores, Inc.
 #
