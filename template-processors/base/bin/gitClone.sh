@@ -19,29 +19,25 @@ set -o errexit
 
 function pullFromTemplatesRepo {
   set +u
-  if [ ! -z "$TEMPLATE_GIT_HTTP_PROXY" ] 
-  then
+  if [ ! -z "$TEMPLATE_GIT_HTTP_PROXY" ]; then
     http_proxy=$TEMPLATE_GIT_HTTP_PROXY
   fi
-  if [ ! -z "$TEMPLATE_GIT_HTTPS_PROXY" ] 
-  then
+  if [ ! -z "$TEMPLATE_GIT_HTTPS_PROXY" ]; then
     https_proxy=$TEMPLATE_GIT_HTTPS_PROXY
-  fi 
-  if [ ! -z "$TEMPLATE_GIT_NO_PROXY" ] 
-  then
+  fi
+  if [ ! -z "$TEMPLATE_GIT_NO_PROXY" ]; then
     no_proxy=$TEMPLATE_GIT_NO_PROXY
   fi
-  if [ -z "$TEMPLATE_GITCONFIG" ] && [ -d "$TEMPLATE_GITCONFIG" ]
-  then
+  if [ -z "$TEMPLATE_GITCONFIG" ] && [ -d "$TEMPLATE_GITCONFIG" ]; then
     for file in $TEMPLATE_GITCONFIG/*; do
       cp -f $file ~/$(basename $file)
     done
     for file in $TEMPLATE_GITCONFIG/.git*; do
       cp -f $file ~/$(basename $file)
-    done      
+    done
   else
    export GIT_SSL_NO_VERIFY=true
-  fi 
+  fi
   set -u
   mkdir -p $TEMPLATE_GIT_DIR
   git clone -b $TEMPLATE_GIT_REF $TEMPLATE_GIT_URI $TEMPLATE_GIT_DIR
@@ -49,29 +45,25 @@ function pullFromTemplatesRepo {
 
 function pullFromParametersRepo {
   set +u
-  if [ ! -z "$PARAMETER_GIT_HTTP_PROXY" ] 
-  then
+  if [ ! -z "$PARAMETER_GIT_HTTP_PROXY" ]; then
     http_proxy=$PARAMETER_GIT_HTTP_PROXY
   fi
-  if [ ! -z "$PARAMETER_GIT_HTTPS_PROXY" ] 
-  then
+  if [ ! -z "$PARAMETER_GIT_HTTPS_PROXY" ]; then
     https_proxy=$PARAMETER_GIT_HTTPS_PROXY
-  fi 
-  if [ ! -z "$PARAMETER_GIT_NO_PROXY" ] 
-  then
+  fi
+  if [ ! -z "$PARAMETER_GIT_NO_PROXY" ]; then
     no_proxy=$PARAMETER_GIT_NO_PROXY
   fi
-  if [ -z "$PARAMETER_GITCONFIG" ] && [ -d "$PARAMETER_GITCONFIG" ]
-  then 
+  if [ -z "$PARAMETER_GITCONFIG" ] && [ -d "$PARAMETER_GITCONFIG" ]; then
     for file in $TEMPLATE_GITCONFIG/*; do
       cp -f $file ~/$(basename $file)
     done
     for file in $TEMPLATE_GITCONFIG/.git*; do
       cp -f $file ~/$(basename $file)
-    done    
+    done
   else
    export GIT_SSL_NO_VERIFY=true
-  fi    
+  fi
   set -u
   mkdir -p $PARAMETER_GIT_DIR
   git clone -b $PARAMETER_GIT_REF $PARAMETER_GIT_URI $PARAMETER_GIT_DIR
