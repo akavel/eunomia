@@ -14,8 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o nounset
-set -o errexit
+set -euxo pipefail
 
 # this is needed because we want the current namespace to be set as default if a namespace is not specified.
 function setContext {
