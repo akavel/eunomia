@@ -41,12 +41,6 @@ function createUpdateResources {
   if [ $CREATE_MODE == "CreateOrMerge" ]; then
     kube apply -R -f $MANIFEST_DIR
   fi
-  if [ $CREATE_MODE == "CreateOrUpdate" ]; then
-    set +u
-    kube create -R -f $MANIFEST_DIR
-    set -u
-    kube update -R -f $MANIFEST_DIR
-  fi
   if [ $CREATE_MODE == "Patch" ]; then
     kube patch -R -f $MANIFEST_DIR
   fi
