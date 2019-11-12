@@ -16,6 +16,8 @@
 
 set -euxo pipefail
 
+set TAG_PREFIX="gitopsconfig.eunomia.kohls.io"
+
 # this is needed because we want the current namespace to be set as default if a namespace is not specified.
 function setContext {
   $kubectl config set-context current --namespace="$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)"
@@ -38,10 +40,40 @@ function deleteResources {
   kube delete -R -f "$MANIFEST_DIR"
 }
 
+function addLabels {
+  # FIXME: get ID of owner CR / eunomia
+  # FIXME: get timestamp
+  local tmpdir="$(mktemp -d)"
+  local timestamp="$(date +%s)"
+  # FIXME(mateusz.c): .json too? everywhere in scripts? how about .yml?
+  for file in $(find "$MANIFEST_DIR" -iregex '.*\.(ya?ml|json)'); do
+    cat "$file" |
+      yq -y -s "map(select(.!=null)|setpath(['metadata','labels','$TAG_PREFIX/owned']; 'TODO-CR-ID'))|.[]" |
+      yq -y -s "map(select(.!=null)|setpath(['metadata','labels','$TAG_PREFIX/applied']; '$timestamp'))|.[]" \
+      > "$tmpdir/labeled"
+    # We must use a helper file (can't do this in single step), as the file would be truncated if we read & write from it in one pipeline
+    cat "$tmpdir/labeled" > "$file"
+  done
+}
+
+function purgeOld {
+  local allKinds="$(kube api-resources --verbs=list -o name | paste -sd, -)"
+  local ownedKinds="$(kube get "$allKinds" --ignore-not-found --all-namespaces \
+      -l "$TAG_PREFIX/owned==TODO-CR-ID,$TAG_PREFIX/applied!=$timestamp" \
+      -o custom-columns=kind:.kind --no-headers=true |
+    sort -u |
+    paste -sd, -)"
+  # TODO: handle cascade vs no cascade
+  kube delete "$ownedKinds" \
+      -l "$TAG_PREFIX/owned==TODO-CR-ID,$TAG_PREFIX/applied!=$timestamp"
+}
+
 function createUpdateResources {
   case "$CREATE_MODE" in
     CreateOrMerge)
+      addLabels
       kube apply -R -f "$MANIFEST_DIR"
+      purgeOld
       ;;
     Patch)
       kube patch -R -f "$MANIFEST_DIR"
