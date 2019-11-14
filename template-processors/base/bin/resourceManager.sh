@@ -48,8 +48,8 @@ function addLabels {
   for file in $(find "$MANIFEST_DIR" -iregex '.*\.\(ya?ml\|json\)'); do
     echo "DEBUG: $file" >&2
     cat "$file" |
-      yq -y -s "map(select(.!=null)|setpath(['metadata','labels','$TAG_OWNED']; 'TODO-CR-ID'))|.[]" |
-      yq -y -s "map(select(.!=null)|setpath(['metadata','labels','$TAG_APPLIED']; '$TIMESTAMP'))|.[]" | tee /dev/stderr \
+      yq -y -s "map(select(.!=null)|setpath([\"metadata\",\"labels\",\"$TAG_OWNED\"]; \"TODO-CR-ID\"))|.[]" |
+      yq -y -s "map(select(.!=null)|setpath([\"metadata\",\"labels\",\"$TAG_APPLIED\"]; \"$TIMESTAMP\"))|.[]" | tee /dev/stderr \
       > "$tmpdir/labeled"
     # We must use a helper file (can't do this in single step), as the file would be truncated if we read & write from it in one pipeline
     cat "$tmpdir/labeled" > "$file"
