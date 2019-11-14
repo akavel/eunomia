@@ -47,9 +47,10 @@ function addLabels {
   local timestamp="$(date +%s)"
   # FIXME(mateusz.c): .json too? everywhere in scripts? how about .yml?
   for file in $(find "$MANIFEST_DIR" -iregex '.*\.(ya?ml|json)'); do
+    echo "DEBUG: $file" >&2
     cat "$file" |
       yq -y -s "map(select(.!=null)|setpath(['metadata','labels','$TAG_PREFIX/owned']; 'TODO-CR-ID'))|.[]" |
-      yq -y -s "map(select(.!=null)|setpath(['metadata','labels','$TAG_PREFIX/applied']; '$timestamp'))|.[]" \
+      yq -y -s "map(select(.!=null)|setpath(['metadata','labels','$TAG_PREFIX/applied']; '$timestamp'))|.[]" | tee /dev/stderr \
       > "$tmpdir/labeled"
     # We must use a helper file (can't do this in single step), as the file would be truncated if we read & write from it in one pipeline
     cat "$tmpdir/labeled" > "$file"
@@ -58,11 +59,13 @@ function addLabels {
 
 function purgeOld {
   local allKinds="$(kube api-resources --verbs=list -o name | paste -sd, -)"
+  echo "DEBUG allKinds=$allKinds"
   local ownedKinds="$(kube get "$allKinds" --ignore-not-found --all-namespaces \
       -l "$TAG_PREFIX/owned==TODO-CR-ID,$TAG_PREFIX/applied!=$timestamp" \
       -o custom-columns=kind:.kind --no-headers=true |
     sort -u |
     paste -sd, -)"
+  echo "DEBUG ownedKinds=$ownedKinds"
   # TODO: handle cascade vs no cascade
   kube delete "$ownedKinds" \
       -l "$TAG_PREFIX/owned==TODO-CR-ID,$TAG_PREFIX/applied!=$timestamp"
