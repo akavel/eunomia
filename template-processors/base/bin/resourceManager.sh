@@ -45,7 +45,7 @@ function addLabels {
   # FIXME: get ID of owner CR / eunomia
   local tmpdir="$(mktemp -d)"
   # FIXME(mateusz.c): .json too? everywhere in scripts? how about .yml?
-  for file in $(find "$MANIFEST_DIR" -iregex '.*\.(ya?ml|json)'); do
+  for file in $(find "$MANIFEST_DIR" -iregex '.*\.\(ya?ml\|json\)'); do
     echo "DEBUG: $file" >&2
     cat "$file" |
       yq -y -s "map(select(.!=null)|setpath(['metadata','labels','$TAG_OWNED']; 'TODO-CR-ID'))|.[]" |
