@@ -16,7 +16,8 @@
 
 set -euxo pipefail
 
-set TAG_PREFIX="gitopsconfig.eunomia.kohls.io"
+TAG_OWNED="gitopsconfig.eunomia.kohls.io/owned"
+TAG_APPLIED="gitopsconfig.eunomia.kohls.io/applied"
 
 # this is needed because we want the current namespace to be set as default if a namespace is not specified.
 function setContext {
@@ -49,8 +50,8 @@ function addLabels {
   for file in $(find "$MANIFEST_DIR" -iregex '.*\.(ya?ml|json)'); do
     echo "DEBUG: $file" >&2
     cat "$file" |
-      yq -y -s "map(select(.!=null)|setpath(['metadata','labels','$TAG_PREFIX/owned']; 'TODO-CR-ID'))|.[]" |
-      yq -y -s "map(select(.!=null)|setpath(['metadata','labels','$TAG_PREFIX/applied']; '$timestamp'))|.[]" | tee /dev/stderr \
+      yq -y -s "map(select(.!=null)|setpath(['metadata','labels','$TAG_OWNED']; 'TODO-CR-ID'))|.[]" |
+      yq -y -s "map(select(.!=null)|setpath(['metadata','labels','$TAG_APPLIED']; '$timestamp'))|.[]" | tee /dev/stderr \
       > "$tmpdir/labeled"
     # We must use a helper file (can't do this in single step), as the file would be truncated if we read & write from it in one pipeline
     cat "$tmpdir/labeled" > "$file"
@@ -61,14 +62,14 @@ function purgeOld {
   local allKinds="$(kube api-resources --verbs=list -o name | paste -sd, -)"
   echo "DEBUG allKinds=$allKinds"
   local ownedKinds="$(kube get "$allKinds" --ignore-not-found --all-namespaces \
-      -l "$TAG_PREFIX/owned==TODO-CR-ID,$TAG_PREFIX/applied!=$timestamp" \
+      -l "$TAG_OWNED==TODO-CR-ID,$TAG_APPLIED!=$timestamp" \
       -o custom-columns=kind:.kind --no-headers=true |
     sort -u |
     paste -sd, -)"
   echo "DEBUG ownedKinds=$ownedKinds"
   # TODO: handle cascade vs no cascade
   kube delete "$ownedKinds" \
-      -l "$TAG_PREFIX/owned==TODO-CR-ID,$TAG_PREFIX/applied!=$timestamp"
+      -l "$TAG_OWNED==TODO-CR-ID,$TAG_APPLIED!=$timestamp"
 }
 
 function createUpdateResources {
