@@ -60,11 +60,14 @@ function purgeOld {
   local allKinds="$(kube api-resources --verbs=list -o name | paste -sd, -)"
   echo "DEBUG allKinds=$allKinds"
   local ownedKinds="$(kube get "$allKinds" --ignore-not-found --all-namespaces \
-      -l "$TAG_OWNED==TODO-CR-ID,$TAG_APPLIED!=$TIMESTAMP" \
+      -l "$TAG_OWNED==TODO-CR-ID" \
       -o custom-columns=kind:.kind --no-headers=true |
     sort -u |
     paste -sd, -)"
   echo "DEBUG ownedKinds=$ownedKinds"
+  if [ -z "$ownedKinds" ]; then
+    return
+  fi
   # TODO: handle cascade vs no cascade
   kube delete "$ownedKinds" \
       -l "$TAG_OWNED==TODO-CR-ID,$TAG_APPLIED!=$TIMESTAMP"
