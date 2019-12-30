@@ -108,7 +108,7 @@ func (e *jobCompletionEmitter) OnUpdate(oldObj, newObj interface{}) {
 	}
 
 	// Check if this is a Job that's owned by GitOpsConfig.
-	gitopsRef, err := e.findJobOwner(newJob)
+	gitopsRef, err := findJobOwner(newJob, e.client)
 	if err != nil {
 		log.Error(err, "cannot find Job's owner")
 		return
@@ -154,7 +154,7 @@ func (e *jobCompletionEmitter) OnUpdate(oldObj, newObj interface{}) {
 // owners (possibly only where Controller==true), and search if any one of them
 // is a GitOpsConfig - instead of having to special-case a CronJob as a
 // possible intermediary.
-func (e *jobCompletionEmitter) findJobOwner(job *batchv1.Job) (*metav1.OwnerReference, error) {
+func findJobOwner(job *batchv1.Job, client client.Client) (*metav1.OwnerReference, error) {
 	const gitopsKind = "GitOpsConfig"
 
 	// Is the job owned directly by GitOpsConfig?
@@ -169,7 +169,7 @@ func (e *jobCompletionEmitter) findJobOwner(job *batchv1.Job) (*metav1.OwnerRefe
 		return nil, nil
 	}
 	cronjob := &batchv1beta1.CronJob{}
-	err := e.client.Get(context.TODO(),
+	err := client.Get(context.TODO(),
 		types.NamespacedName{Name: cronjobRef.Name, Namespace: job.GetNamespace()},
 		cronjob)
 	if err != nil {

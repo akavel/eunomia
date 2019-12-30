@@ -123,6 +123,13 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
+	_, err = addJobWatch(mgr.GetConfig(), &statusUpdater{
+		client: mgr.GetClient(),
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
