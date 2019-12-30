@@ -74,11 +74,11 @@ func (u *statusUpdater) OnUpdate(oldObj, newObj interface{}) {
 	}
 	switch {
 	case newJob.Status.Active > 0:
-		status.State = inprogress
+		status.State = "InProgress"
 	case newJob.Status.Succeeded == 1:
-		status.State = success
+		status.State = "Succeeded"
 	case newJob.Status.Succeeded == 0 && newJob.Status.Failed > 0:
-		status.State = failed
+		status.State = "Failed"
 	}
 
 	// Update status
