@@ -37,6 +37,7 @@ func (u *statusUpdater) OnAdd(newObj interface{})    { u.OnUpdate(nil, newObj) }
 func (u *statusUpdater) OnDelete(oldObj interface{}) { u.OnUpdate(oldObj, nil) }
 
 func (u *statusUpdater) OnUpdate(oldObj, newObj interface{}) {
+	log.Info("ONUPDATE statusUpdater")
 	// Extract Job objects from arguments
 	oldJob, ok := oldObj.(*batchv1.Job)
 	if !ok && oldObj != nil {
@@ -82,6 +83,7 @@ func (u *statusUpdater) OnUpdate(oldObj, newObj interface{}) {
 	}
 
 	// Update status
+	log.Info("STATUSUPDATER reticulating splines")
 	gitops := &gitopsv1alpha1.GitOpsConfig{}
 	err = u.client.Get(context.TODO(), types.NamespacedName{Name: gitopsRef.Name, Namespace: newJob.GetNamespace()}, gitops)
 	if err != nil {

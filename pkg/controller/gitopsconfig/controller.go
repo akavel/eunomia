@@ -123,6 +123,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
+	log.Info("HELLO ADDJOB")
 	_, err = addJobWatch(mgr.GetConfig(), &statusUpdater{
 		client: mgr.GetClient(),
 	})
