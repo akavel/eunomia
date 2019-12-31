@@ -47,7 +47,7 @@ func addJobWatch(kubecfg *rest.Config, handler cache.ResourceEventHandler) (func
 	}
 	watchlist := cache.NewListWatchFromClient(clientset.Batch().RESTClient(), "jobs", corev1.NamespaceAll, fields.Everything())
 	// https://stackoverflow.com/a/49231503/98528
-	// TODO: what is the difference vs. NewSharedInformer?
+	// TODO: what is the difference vs. NewSharedInformer? -> https://stackoverflow.com/q/59544139
 	_, controller := cache.NewInformer(watchlist, &batchv1.Job{}, 0, handler)
 
 	stopChan := make(chan struct{})
