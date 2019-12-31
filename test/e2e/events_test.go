@@ -59,7 +59,7 @@ func TestJobEvents_JobSuccess(t *testing.T) {
 	// Step 1: register an event monitor/watcher
 
 	events := make(chan *eventv1beta1.Event, 5)
-	closer, err := test.WatchEvents(framework.Global.KubeClient, events, namespace, "gitops-events-hello-success", 120*time.Second)
+	closer, err := test.WatchEvents(framework.Global.KubeClient, events, namespace, "gitops-events-hello-success", 2*time.Minute)
 	if err != nil {
 		t.Fatal(err)
 	}

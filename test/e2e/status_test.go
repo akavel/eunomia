@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -9,6 +10,9 @@ import (
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	eventv1beta1 "k8s.io/api/events/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 
 	"github.com/KohlsTechnology/eunomia/pkg/apis"
 	gitopsv1alpha1 "github.com/KohlsTechnology/eunomia/pkg/apis/eunomia/v1alpha1"
@@ -300,4 +304,45 @@ func TestJobEvents_JobFailed(t *testing.T) {
 	case <-time.After(3 * time.Minute):
 		t.Errorf("timeout waiting for JobFailed event")
 	}
+}
+
+func watchStatus(client kubernetes.Interface, statuses chan<- gitopsv1alpha1.GitOpsConfigStatus, namespace, name string, timeout time.Duration) (closer func(), err error) {
+	timeoutSeconds := int64(timeout / time.Second)
+	opts := &metav1.ListOptions{
+		TimeoutSeconds: &timeoutSeconds,
+	}
+	watcher, err := client.Discovery().
+		RESTClient().
+		Get().
+		Namespace(namespace).
+		Resource("gitopsconfigs").
+		Name(name).
+		VersionedParams(opts, scheme.ParameterCodec).
+		Timeout(timeout).Watch()
+	if err != nil {
+		return nil, err
+	}
+	go func() { // based on: https://stackoverflow.com/a/54930836
+		ch := watcher.ResultChan()
+		for {
+			select {
+			case change, ok := <-ch:
+				if !ok {
+					// Channel closed, finish watching.
+					close(statuses)
+					return
+				}
+				if change.Type != watch.Added {
+					continue
+				}
+				gitops, ok := change.Object.(*gitopsv1alpha1.GitOpsConfig)
+				if !ok || gitops.Name != name {
+					fmt.Fprintf(os.Stderr, "GOT: %T\n", change.Object)
+					continue
+				}
+				statuses <- gitops.Status
+			}
+		}
+	}()
+	return func() { watcher.Stop() }, nil
 }
