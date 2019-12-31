@@ -118,7 +118,7 @@ func TestJobEvents_JobSuccess(t *testing.T) {
 			t.Errorf("got bad event: %v", event)
 		}
 	case <-time.After(10 * time.Second):
-		t.Errorf("timeout waiting for JobSuccessful event")
+		t.Error("timeout waiting for JobSuccessful event")
 	}
 	// Verify there are no more events
 	select {
@@ -219,7 +219,7 @@ func TestJobEvents_PeriodicJobSuccess(t *testing.T) {
 			t.Errorf("got bad event: %v", event)
 		}
 	case <-time.After(10 * time.Second):
-		t.Errorf("timeout waiting for JobSuccessful event")
+		t.Error("timeout waiting for JobSuccessful event")
 	}
 }
 
@@ -316,6 +316,6 @@ func TestJobEvents_JobFailed(t *testing.T) {
 			t.Errorf("got bad event: %v", event)
 		}
 	case <-time.After(3 * time.Minute):
-		t.Errorf("timeout waiting for JobFailed event")
+		t.Error("timeout waiting for JobFailed event")
 	}
 }
