@@ -43,7 +43,7 @@ func addJobWatch(kubecfg *rest.Config, handler cache.ResourceEventHandler) (func
 	// based on: http://web.archive.org/web/20161221032701/https://solinea.com/blog/tapping-kubernetes-events
 	clientset, err := kubernetes.NewForConfig(kubecfg)
 	if err != nil {
-		return nil, xerrors.Errorf("cannot create Job watcher from controller manager: %w", err)
+		return nil, xerrors.Errorf("cannot create Job watcher from config: %w", err)
 	}
 	watchlist := cache.NewListWatchFromClient(clientset.Batch().RESTClient(), "jobs", corev1.NamespaceAll, fields.Everything())
 	// https://stackoverflow.com/a/49231503/98528
