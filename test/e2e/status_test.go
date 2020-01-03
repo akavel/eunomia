@@ -8,10 +8,9 @@ import (
 
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	"golang.org/x/xerrors"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/client-go/kubernetes"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 
@@ -335,19 +334,14 @@ func (h ChangeHandlerFunc) OnDelete(old interface{})      { h(old, nil) }
 var _ cache.ResourceEventHandler = (ChangeHandlerFunc)(nil)
 
 func watchStatus(kubecfg *rest.Config, statuses chan<- gitopsv1alpha1.GitOpsConfigStatus, namespace, name string) (closer func(), err error) {
-	// based on:
-	// http://web.archive.org/web/20161221032701/https://solinea.com/blog/tapping-kubernetes-events;
-	// I tried to implement this function based on a simple Watch function
-	// initially, but I didn't manage to find a way to use it for custom
-	// resources.
-	clientset, err := kubernetes.NewForConfig(kubecfg)
+
+	fac := informers.NewSharedInformerFactoryWithOptions(framework.Global.KubeClient, 30*time.Second,
+		informers.WithNamespace(namespace))
+	inf, err := fac.ForResource(schema.GroupVersionResource{"eunomia.kohls.io", "v1alpha1", name})
 	if err != nil {
-		return nil, xerrors.Errorf("cannot create Job watcher from config: %w", err)
+		return nil, xerrors.Errorf("cannot create Job informer: %w", err)
 	}
-	watchlist := cache.NewListWatchFromClient(clientset.Batch().RESTClient(), "gitopsconfigs", corev1.NamespaceAll, fields.Everything())
-	// https://stackoverflow.com/a/49231503/98528
-	// TODO: what is the difference vs. NewSharedInformer? -> https://stackoverflow.com/q/59544139
-	_, controller := cache.NewInformer(watchlist, &gitopsv1alpha1.GitOpsConfig{}, 0, ChangeHandlerFunc(func(before, after interface{}) {
+	inf.Informer().AddEventHandler(ChangeHandlerFunc(func(before, after interface{}) {
 		if after == nil {
 			return
 		}
@@ -355,6 +349,29 @@ func watchStatus(kubecfg *rest.Config, statuses chan<- gitopsv1alpha1.GitOpsConf
 		statuses <- gitops.Status
 	}))
 	stopChan := make(chan struct{})
-	go controller.Run(stopChan)
+	go inf.Informer().Run(stopChan)
 	return func() { close(stopChan) }, nil
+
+	// // based on:
+	// // http://web.archive.org/web/20161221032701/https://solinea.com/blog/tapping-kubernetes-events;
+	// // I tried to implement this function based on a simple Watch function
+	// // initially, but I didn't manage to find a way to use it for custom
+	// // resources.
+	// clientset, err := kubernetes.NewForConfig(kubecfg)
+	// if err != nil {
+	// 	return nil, xerrors.Errorf("cannot create Job watcher from config: %w", err)
+	// }
+	// watchlist := cache.NewListWatchFromClient(clientset.Batch().RESTClient(), "gitopsconfigs", corev1.NamespaceAll, fields.Everything())
+	// // https://stackoverflow.com/a/49231503/98528
+	// // TODO: what is the difference vs. NewSharedInformer? -> https://stackoverflow.com/q/59544139
+	// _, controller := cache.NewInformer(watchlist, &gitopsv1alpha1.GitOpsConfig{}, 0, ChangeHandlerFunc(func(before, after interface{}) {
+	// 	if after == nil {
+	// 		return
+	// 	}
+	// 	gitops := after.(*gitopsv1alpha1.GitOpsConfig)
+	// 	statuses <- gitops.Status
+	// }))
+	// stopChan := make(chan struct{})
+	// go controller.Run(stopChan)
+	// return func() { close(stopChan) }, nil
 }
