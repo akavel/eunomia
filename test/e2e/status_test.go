@@ -10,6 +10,8 @@ import (
 	"golang.org/x/xerrors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
@@ -81,7 +83,7 @@ func TestStatus_Succeeded(t *testing.T) {
 
 	// Step 2: watch Status till Succeeded & verify Status fields
 
-	err = wait.Poll(retryInterval, 15*time.Second, func() (done bool, err error) {
+	err = wait.Poll(retryInterval, 25*time.Second, func() (done bool, err error) {
 		fresh := gitopsv1alpha1.GitOpsConfig{}
 		err = framework.Global.Client.Get(context.TODO(), types.NamespacedName{Namespace: namespace, Name: gitops.Name}, &fresh)
 		if err != nil {
@@ -93,13 +95,16 @@ func TestStatus_Succeeded(t *testing.T) {
 			if fresh.Status.CompletionTime != nil {
 				t.Errorf("want CompletionTime==nil, got: %v", fresh.Status)
 			}
+			return false, nil
 		case "Succeeded":
 			if fresh.Status.CompletionTime == nil {
 				t.Errorf("CompletionTime==nil in: %v", fresh.Status)
 			}
 			return true, nil
+		default:
+			t.Errorf("Unexpected State: %v", fresh.Status)
+			return false, nil
 		}
-		return false, nil
 	})
 	if err != nil {
 		t.Error(err)
@@ -111,7 +116,7 @@ func TestStatus_Succeeded(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if pod == nil || pod.Status != "Running" {
+	if pod == nil || pod.Status.Phase != "Running" {
 		t.Fatalf("unexpected state of Pod: %v", pod)
 	}
 
