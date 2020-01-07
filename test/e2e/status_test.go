@@ -88,16 +88,16 @@ func TestStatus_Succeeded(t *testing.T) {
 		case "InProgress":
 			// TODO: check that fresh.Status.StartTime is in the past, but after whole test started
 			if fresh.Status.CompletionTime != nil {
-				t.Errorf("want CompletionTime==nil, got: %v", fresh.Status)
+				t.Errorf("want CompletionTime==nil, got: %#v", fresh.Status)
 			}
 			return false, nil
 		case "Succeeded":
 			if fresh.Status.CompletionTime == nil {
-				t.Errorf("CompletionTime==nil in: %v", fresh.Status)
+				t.Errorf("CompletionTime==nil in: %#v", fresh.Status)
 			}
 			return true, nil
 		default:
-			t.Errorf("Unexpected State: %v", fresh.Status)
+			t.Errorf("Unexpected State: %#v", fresh.Status)
 			return false, nil
 		}
 	})
@@ -293,16 +293,16 @@ func TestStatus_JobFailed(t *testing.T) {
 		case "InProgress":
 			// TODO: check that fresh.Status.StartTime is in the past, but after whole test started
 			if fresh.Status.CompletionTime != nil {
-				t.Errorf("want CompletionTime==nil, got: %v", fresh.Status)
+				t.Errorf("want CompletionTime==nil, got: %#v", fresh.Status)
 			}
 			return false, nil
 		case "Failed":
 			if fresh.Status.CompletionTime == nil {
-				t.Errorf("CompletionTime==nil in: %v", fresh.Status)
+				t.Errorf("CompletionTime==nil in: %#v", fresh.Status)
 			}
 			return true, nil
 		default:
-			t.Errorf("Unexpected State: %v", fresh.Status)
+			t.Errorf("Unexpected State: %#v", fresh.Status)
 			return false, nil
 		}
 	})
