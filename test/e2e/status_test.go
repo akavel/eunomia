@@ -297,8 +297,8 @@ func TestStatus_JobFailed(t *testing.T) {
 			}
 			return false, nil
 		case "Failed":
-			if fresh.Status.CompletionTime == nil {
-				t.Errorf("CompletionTime==nil in: %#v", fresh.Status)
+			if fresh.Status.CompletionTime != nil {
+				t.Errorf("want CompletionTime==nil, got: %#v", fresh.Status)
 			}
 			return true, nil
 		default:
