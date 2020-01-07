@@ -27,6 +27,7 @@ import (
 	gitopsv1alpha1 "github.com/KohlsTechnology/eunomia/pkg/apis/eunomia/v1alpha1"
 )
 
+// FIXME: godoc
 type statusUpdater struct {
 	client client.Client
 }
@@ -36,8 +37,9 @@ var _ cache.ResourceEventHandler = &statusUpdater{}
 func (u *statusUpdater) OnAdd(newObj interface{})    { u.OnUpdate(nil, newObj) }
 func (u *statusUpdater) OnDelete(oldObj interface{}) { u.OnUpdate(oldObj, nil) }
 
+// FIXME: helper handler func type
 func (u *statusUpdater) OnUpdate(oldObj, newObj interface{}) {
-	log.Info("ONUPDATE statusUpdater")
+	log.Info("ONUPDATE statusUpdater") // FIXME: drop debug logs
 	// Extract Job objects from arguments
 	oldJob, ok := oldObj.(*batchv1.Job)
 	if !ok && oldObj != nil {
