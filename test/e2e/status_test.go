@@ -41,16 +41,7 @@ func TestStatus_Succeeded(t *testing.T) {
 		eunomiaRef = "master"
 	}
 
-	// Step 1: register a status monitor/watcher
-
-	statuses := make(chan gitopsv1alpha1.GitOpsConfigStatus, 50)
-	closer, err := watchStatus(framework.Global.KubeConfig, statuses, namespace, "gitops-status-hello-success")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer closer()
-
-	// Step 2: create a simple CR with a single Pod
+	// Step 1: create a simple CR with a single Pod
 
 	gitops := &gitopsv1alpha1.GitOpsConfig{
 		TypeMeta: metav1.TypeMeta{
@@ -88,50 +79,42 @@ func TestStatus_Succeeded(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = WaitForPodWithImage(t, framework.Global, namespace, "hello-status-test-a", "hello-app:1.0", retryInterval, timeout)
+	// Step 2: watch Status till Succeeded & verify Status fields
+
+	err = wait.Poll(retryInterval, 15*time.Second, func() (done bool, err error) {
+		fresh := gitopsv1alpha1.GitOpsConfig{}
+		err = framework.Global.Client.Get(context.TODO(), types.NamespacedName{Namespace: namespace, Name: gitops.Name}, &fresh)
+		if err != nil {
+			return false, err
+		}
+		switch fresh.Status.State {
+		case "InProgress":
+			// TODO: check that fresh.Status.StartTime is in the past, but after whole test started
+			if fresh.Status.CompletionTime != nil {
+				t.Errorf("want CompletionTime==nil, got: %v", fresh.Status)
+			}
+		case "Succeeded":
+			if fresh.Status.CompletionTime == nil {
+				t.Errorf("CompletionTime==nil in: %v", fresh.Status)
+			}
+			return true, nil
+		}
+		return false, nil
+	})
 	if err != nil {
 		t.Error(err)
 	}
 
-	// Step 3: Verify status
+	// Step 3: verify that the pod exists
 
-firstSuccess:
-	for {
-		select {
-		case s := <-statuses:
-			switch s.State {
-			case "InProgress":
-				// TODO: check that time is after test start time
-				if s.CompletionTime != nil {
-					t.Errorf("want CompletionTime==nil, got %v", s.CompletionTime)
-				}
-			case "Succeeded":
-				if s.CompletionTime == nil {
-					t.Fatal("CompletionTime==nil")
-				}
-				break firstSuccess
-			default:
-				t.Fatalf("unexpected Status: %v", s)
-			}
-		case <-time.After(10 * time.Second):
-			t.Error("timeout waiting for Succeeded status")
-		}
+	pod, err := GetPod(namespace, "hello-status-test-a", "hello-app:1.0", framework.Global.KubeClient)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if pod == nil || pod.Status != "Running" {
+		t.Fatalf("unexpected state of Pod: %v", pod)
 	}
 
-moreSuccess:
-	for {
-		select {
-		case s, ok := <-statuses:
-			if !ok {
-				break moreSuccess
-			}
-			if s.State != "Succeeded" {
-				t.Fatalf("unexpected Status: %v", s)
-			}
-		default:
-			break moreSuccess
-		}
-	}
 }
 
 // // TestJobEvents_PeriodicJobSuccess verifies that a JobSuccessful event is
@@ -339,7 +322,7 @@ func watchStatus(kubecfg *rest.Config, statuses chan<- gitopsv1alpha1.GitOpsConf
 		informers.WithNamespace(namespace))
 	inf, err := fac.ForResource(schema.GroupVersionResource{"eunomia.kohls.io", "v1alpha1", name})
 	if err != nil {
-		return nil, xerrors.Errorf("cannot create Job informer: %w", err)
+		return nil, xerrors.Errorf("cannot create GitOpsConfig informer: %w", err)
 	}
 	inf.Informer().AddEventHandler(ChangeHandlerFunc(func(before, after interface{}) {
 		if after == nil {
