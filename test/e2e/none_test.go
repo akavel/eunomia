@@ -16,6 +16,7 @@ limitations under the License.
 
 package e2e
 
+/*
 import (
 	goctx "context"
 	"testing"
@@ -97,3 +98,4 @@ func TestNone(t *testing.T) {
 		t.Error(err)
 	}
 }
+*/
