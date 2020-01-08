@@ -287,19 +287,7 @@ func TestStatus_Failed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = wait.Poll(retryInterval, 1*time.Minute, func() (done bool, err error) {
-		fresh := gitopsv1alpha1.GitOpsConfig{}
-		err = framework.Global.Client.Get(context.TODO(), types.NamespacedName{Namespace: namespace, Name: gitops.Name}, &fresh)
-		if err != nil {
-			return false, err
-		}
-		return fresh.Status.State != "", nil
-	})
-	if err != nil {
-		t.Error(err)
-	}
-
-	// Step 3: watch Status till Failed & verify Status fields
+	// Step 2: watch Status till Failed & verify Status fields
 
 	err = wait.Poll(retryInterval, 3*time.Minute, func() (done bool, err error) {
 		fresh := gitopsv1alpha1.GitOpsConfig{}
