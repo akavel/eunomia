@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -16,6 +17,9 @@ import (
 )
 
 func TestStatus_Succeeded(t *testing.T) {
+	fmt.Println("START JobFailed")
+	defer fmt.Println("END JobFailed")
+
 	ctx := framework.NewTestCtx(t)
 	defer ctx.Cleanup()
 
@@ -210,7 +214,9 @@ func TestStatus_Succeeded(t *testing.T) {
 // 	}
 // }
 
-func TestStatus_JobFailed(t *testing.T) {
+func TestStatus_Failed(t *testing.T) {
+	fmt.Println("START Failed")
+	defer fmt.Println("END Failed")
 	if testing.Short() {
 		// FIXME: as of writing this test, "backoffLimit" in job.yaml is set to 4,
 		// which means we need to wait until 5 Pod retries fail, eventually
@@ -281,7 +287,19 @@ func TestStatus_JobFailed(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Step 2: watch Status till Failed & verify Status fields
+	err = wait.Poll(retryInterval, 1*time.Minute, func() (done bool, err error) {
+		fresh := gitopsv1alpha1.GitOpsConfig{}
+		err = framework.Global.Client.Get(context.TODO(), types.NamespacedName{Namespace: namespace, Name: gitops.Name}, &fresh)
+		if err != nil {
+			return false, err
+		}
+		return fresh.Status.State != "", nil
+	})
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Step 3: watch Status till Failed & verify Status fields
 
 	err = wait.Poll(retryInterval, 3*time.Minute, func() (done bool, err error) {
 		fresh := gitopsv1alpha1.GitOpsConfig{}

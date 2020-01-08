@@ -18,6 +18,7 @@ package gitopsconfig
 
 import (
 	"context"
+	"fmt"
 
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -82,6 +83,7 @@ func (u *statusUpdater) OnUpdate(oldObj, newObj interface{}) {
 		status.State = "Succeeded"
 	case newJob.Status.Succeeded == 0 && newJob.Status.Failed > 0:
 		status.State = "Failed"
+		log.Info(fmt.Sprintf("MCDBG: job status: %#v", newJob.Status))
 	}
 
 	// Update status
