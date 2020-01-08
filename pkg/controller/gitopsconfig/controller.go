@@ -123,7 +123,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	log.Info("HELLO ADDJOB")
 	_, err = addJobWatch(mgr.GetConfig(), &statusUpdater{
 		client: mgr.GetClient(),
 	})
@@ -238,7 +237,6 @@ func (r *Reconciler) createJob(jobtype string, instance *gitopsv1alpha1.GitOpsCo
 		log.Error(err, "unable to create the job", "job", job)
 		return err
 	}
-	// go watchJobForStatus(r.client, job.Name, job.Namespace, instance.Name, instance.Namespace, time.Time{})
 	return nil
 }
 
@@ -292,7 +290,6 @@ func (r *Reconciler) createCronJob(instance *gitopsv1alpha1.GitOpsConfig) error 
 		log.Error(err, "Error in GetCronJob")
 		return err
 	}
-	// go scheduleStatusForCronJobs(jobmonitor{r.client, cronjob.Name, cronjob.Namespace, time.Time{}}, result.Spec.Schedule, instance.Name, instance.Namespace)
 	return nil
 }
 
