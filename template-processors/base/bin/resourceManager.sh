@@ -72,6 +72,7 @@ function deleteByOldLabels() {
         sort -u |
         paste -sd, -)"
     if [ -z "$ownedKinds" ]; then
+        echo "No resources to delete found, nothing to do."
         return
     fi
     local filter="${TAG_OWNER}==${owner}"
