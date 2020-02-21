@@ -429,7 +429,7 @@ func (r *Reconciler) manageDeletion(instance *gitopsv1alpha1.GitOpsConfig) (reco
 			return reconcile.Result{}, xerrors.Errorf("GitOpsConfig finalizer unable to get job pod's status for %q: %w", instance.Name, err)
 		}
 		log.Info("GitOpsConfig finalizer found one job", "instance", instance.Name, "podStatus", status)
-		safeReasons := []string{"ErrImagePull", "ImagePullBackOff", "InvalidImageName"}
+		safeReasons := []string{"ErrImagePull", "ErrImageNeverPull", "ImagePullBackOff", "InvalidImageName"}
 		if status != nil && status.Waiting != nil && containsString(safeReasons, status.Waiting.Reason) {
 			err = r.client.Delete(context.TODO(), &jobs[0], client.PropagationPolicy(metav1.DeletePropagationBackground))
 			if err != nil {
