@@ -13,7 +13,7 @@ spec:
     contextDir: test/e2e/testdata/empty-yaml
   triggers:
   - type: Change
-  serviceAccountRef: eunomia-runner-yaml
+  serviceAccountRef: ocp-conflict-test-runner
   templateProcessorImage: quay.io/kohlstechnology/eunomia-base:latest
   resourceHandlingMode: Apply
   resourceDeletionMode: Delete
