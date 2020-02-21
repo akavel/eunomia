@@ -66,10 +66,10 @@ function deleteByOldLabels() {
     # We can't just use ${allKinds} in `kube delete`, as this would error out on deletion permissions.
     # Also, using a minimal list makes the delete operation more conservative, as well as easier to debug.
     local ownedKinds="$(kube get "$allKinds" --ignore-not-found \
-        -l "$TAG_OWNER==$owner" \
-        -o custom-columns=kind:.kind \
-        --no-headers=true |
+        -l "$TAG_OWNER==${owner}" \
+        -o jsonpath="{range .items[*]}{.kind} {.apiVersion}{'\n'}{end}" |  # e.g. "Pod v1" OR "StorageClass storage.k8s.io/v1"
         sort -u |
+        awk -F'[ /]' '{if (NF==2) {print $1} else {print $1"."$3"."$2}}' | # e.g. "Pod" OR "StorageClass.v1.storage.k8s.io"
         paste -sd, -)"
     if [ -z "$ownedKinds" ]; then
         echo "No resources to delete found, nothing to do."
