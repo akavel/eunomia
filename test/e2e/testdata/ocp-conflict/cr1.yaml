@@ -6,10 +6,10 @@ metadata:
 spec:
   templateSource:
     uri: https://github.com/akavel/eunomia
-    ref: master
+    ref: kind-collisions02
     contextDir: test/e2e/testdata/ocp-conflict/templates
   parameterSource:
-    ref: master
+    ref: kind-collisions02
     contextDir: test/e2e/testdata/empty-yaml
   triggers:
   - type: Change
