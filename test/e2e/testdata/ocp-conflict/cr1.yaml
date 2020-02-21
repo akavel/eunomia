@@ -2,6 +2,7 @@ apiVersion: eunomia.kohls.io/v1alpha1
 kind: GitOpsConfig
 metadata:
   name: ocp-conflict-test
+  namespace: ocp-conflict-test-ns
 spec:
   templateSource:
     uri: https://github.com/akavel/eunomia
