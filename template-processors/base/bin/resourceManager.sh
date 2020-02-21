@@ -62,7 +62,7 @@ function deleteByOldLabels() {
     # NOTE: removing componentstatuses because they ignore -l flag: https://github.com/kubernetes/kubectl/issues/151#issuecomment-562578617
     # NOTE: removing projectrequests.project.openshift.io as they seem to ignore -l flag
     local blacklistKinds="componentstatuses projectrequests.project.openshift.io"
-    local allKinds="$(kube api-resources --verbs=list -o name | grep -ivE "^(${blacklistKinds/ /|})$")"
+    local allKinds="$(kube api-resources --verbs=list -o name | grep -ivE "^(${blacklistKinds/ /|})$" | paste -sd, -)"
     # We can't just use ${allKinds} in `kube delete`, as this would error out on deletion permissions.
     # Also, using a minimal list makes the delete operation more conservative, as well as easier to debug.
     local ownedKinds="$(kube get "$allKinds" --ignore-not-found \
