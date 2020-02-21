@@ -7,7 +7,7 @@ spec:
   templateSource:
     uri: https://github.com/akavel/eunomia
     ref: kind-collisions02
-    contextDir: test/e2e/testdata/ocp-conflict/templates
+    contextDir: test/e2e/testdata/ocp-conflict/template1
   parameterSource:
     ref: kind-collisions02
     contextDir: test/e2e/testdata/empty-yaml
