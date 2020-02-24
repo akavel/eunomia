@@ -1,0 +1,21 @@
+---
+apiVersion: eunomia.kohls.io/v1alpha1
+kind: GitOpsConfig
+metadata:
+  name: ocp-conflict-test
+  namespace: ocp-conflict-test-ns
+spec:
+  templateSource:
+    uri: https://github.com/akavel/eunomia
+    ref: verify-277
+    contextDir: test/e2e/testdata/ocp-conflict/template1
+  parameterSource:
+    ref: verify-277
+    contextDir: test/e2e/testdata/empty-yaml
+  triggers:
+  - type: Change
+  serviceAccountRef: ocp-conflict-test-runner
+  templateProcessorImage: quay.io/kohlstechnology/eunomia-base:latest
+  resourceHandlingMode: Apply
+  resourceDeletionMode: Delete
+
