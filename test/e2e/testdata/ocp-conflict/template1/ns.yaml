@@ -1,0 +1,75 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  annotations:
+    openshift.io/description: "discover all the eunomia bugs"
+    openshift.io/display-name: bug-tester
+  labels:
+    app-name: eunomia
+    billing-dept-id: "1234"
+    environment-name: dev-a
+    environment-type: platform
+    lob: paas
+    network-policy-source: None
+    program-id: None
+  name: bug-tester
+spec:
+  finalizers:
+  - kubernetes
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: compute
+  namespace: bug-tester
+spec:
+  limits:
+    - type: Pod
+      max:
+        cpu: "4"
+        memory: "16Gi"
+      min:
+        cpu: "10m"
+        memory: "100Mi"
+    - type: Container
+      max:
+        cpu: "4"
+        memory: "16Gi"
+      min:
+        cpu: "10m"
+        memory: "100Mi"
+      default:
+        cpu: "100m"
+        memory: "100Mi"
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute
+  namespace: bug-tester
+spec:
+  hard:
+    pods: "10"
+    requests.cpu: "4"
+    requests.memory: 16Gi
+    limits.cpu: "4"
+    limits.memory: 16Gi
+---
+apiVersion: v1
+items:
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: RoleBinding
+  metadata:
+    name: admins
+    namespace: bug-tester
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: Namespace-Admin
+  subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: OpenShift-L2
+kind: List
+
