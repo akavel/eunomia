@@ -10,8 +10,8 @@ eunomia:
     serviceAccount: "eunomia-operator"
 
     image:
-      repository: "quay.io"
-      name: "kohlstechnology/eunomia-operator"
+      repository: "us.gcr.io"
+      name: "kohls-paas-ops/eunomia-operator"
       tag: "latest"
       pullPolicy: Always
 
